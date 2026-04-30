@@ -19,7 +19,9 @@ void recordInteraction() {
 // 检查是否需要关机
 void checkPowerOff() {
   if (millis() - lastInteractionTime > POWER_OFF_TIME_MS) {
-    M5.Axp.PowerOff();  // 关机
+    playShutdownSound();  // 播放关机音效
+    delay(600);           // 等待音效播放完成
+    M5.Axp.PowerOff();    // 关机
   }
 }
 
@@ -32,6 +34,17 @@ void playStartSound() {
   M5.Beep.tone(1760, 150);  // 1760Hz, 150ms
   delay(200);
   M5.Beep.tone(2637, 200);  // 2637Hz, 200ms
+}
+
+// 关机提示音 - 降序三音调
+void playShutdownSound() {
+  M5.Beep.begin();
+  M5.Beep.setVolume(3);
+  M5.Beep.tone(2637, 150);  // 2637Hz, 150ms
+  delay(200);
+  M5.Beep.tone(1760, 150);  // 1760Hz, 150ms
+  delay(200);
+  M5.Beep.tone(880, 200);   // 880Hz, 200ms
 }
 
 // ============================================
