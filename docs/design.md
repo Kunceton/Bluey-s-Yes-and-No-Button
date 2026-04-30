@@ -21,8 +21,8 @@
 **Dual Button (Grove Port B)**
 | Wire | Signal | GPIO |
 |------|--------|------|
-| Yellow | RED_BTN | G32 |
-| White | BLUE_BTN | G33 |
+| Yellow | RED_BTN (N) | G32 |
+| White | BLUE_BTN (Y) | G33 |
 | Red | 5V | - |
 | Black | GND | - |
 
@@ -31,13 +31,14 @@
 |--------|------|
 | BCLK | G26 |
 | LRC | G0 |
-| DIN | G36 |
+| DIN | G25 |
 
 ### 2.3 Power Architecture
 
 - USB Type-C power input (5V)
 - Internal 120mAh battery
 - Hat SPK2: 4.5V-5.5V, max 3.2W output
+- Auto power-off after 5 minutes of inactivity
 
 ## 3. UI Design
 
@@ -45,40 +46,75 @@
 
 ```
 +----------------------------------+
-|  [Yellow Rectangle Background]   |
+|        [Bluey Logo 135x65]       |
++----------------------------------+
 |                                  |
-|    (Green Y)      (Red N)        |
-|      O              O            |
+|         [Frame Border]           |
+|                                  |
+|            (Green Y)              |
+|              O                    |
+|                                  |
+|            (Red N)               |
+|              O                    |
 |                                  |
 +----------------------------------+
 ```
+
+**Screen Resolution:** 135 x 240 (M5StickC Plus portrait mode)
 
 ### 3.2 Color Palette
 
 | Element | Color | Hex |
 |---------|-------|-----|
-| Background | Yellow | #e2e18f |
-| Frame Border | Golden Yellow | #cfc07a |
-| Y Button | Green | #98e7a9 |
-| Y Button Border | Dark Green | #376d42 |
-| N Button | Red | #be3066 |
-| N Button Border | Dark Red | #5c1923 |
+| Background | Yellow | #FFE0 |
+| Frame Border | Golden Yellow | #DED6 |
+| Y Button Normal | Dark Green | #3648 |
+| Y Button Pressed | Darker Green | #1C24 |
+| Y Button Text | Light Green | #87D3 |
+| N Button Normal | Dark Red | #B96A |
+| N Button Pressed | Darker Red | #8B35 |
+| N Button Text | Light Red | #F5D7 |
 
 ### 3.3 Button Animation
 
-- **Press Effect:** Button下沉13像素 + 阴影减少
-- **Duration:** 按钮按下期间持续显示
+- **Press Effect:** Button color darkens (not position change)
+- **Y Button:** 颜色从 #3648 变为 #1C24（按下）
+- **N Button:** 颜色从 #B96A 变为 #8B35（按下）
+- **Radius:** 32 pixels (diameter 64)
+- **Y Position:** Y=115
+- **N Position:** Y=190
+
+### 3.4 Logo
+
+- **Source:** bluey-logo.png
+- **Display Size:** 135 x 65 pixels (full width)
+- **Position:** Top of screen (Y=0)
+- **Format:** RGB565 pixel data embedded in code
 
 ## 4. Software Architecture
 
 ### 4.1 Audio System
 
 - **Amplifier IC:** MAX98357 (I2S interface)
-- **Audio Format:** MP3 (stored in SPIFFS)
-- **Files:** `yes.mp3`, `no.mp3`
+- **Audio Format:** WAV (stored in SPIFFS)
+- **Files:** `yes.wav`, `no.wav`
 - **Storage:** 4MB SPIFFS partition
+- **Audio Source:** https://theyesnobutton.com
+- **Processing:** +6.5dB gain, normalized to ~0dBFS peak
 
-### 4.2 State Machine
+### 4.2 Boot Sound
+
+- **Type:** M5StickC Plus built-in beep
+- **Melody:** Three ascending tones (880Hz → 1760Hz → 2637Hz)
+- **Duration:** ~600ms total
+
+### 4.3 Power Management
+
+- **Auto Power-Off:** 5 minutes (300 seconds) of inactivity
+- **Implementation:** `M5.Axp.PowerOff()`
+- **Timer Reset:** Any button press resets the timer
+
+### 4.4 State Machine
 
 ```
 IDLE -> [RED_BTN pressed] -> PLAY_NO -> IDLE
@@ -90,13 +126,19 @@ IDLE -> [BLUE_BTN pressed] -> PLAY_YES -> IDLE
 ```
 M5Stack-StickC-Plus-Bluey-YesNo/
 ├── firmware/BlueyButton/
-│   ├── BlueyButton.ino
-│   └── data/           # SPIFFS files
-│       ├── yes.mp3
-│       └── no.mp3
-├── sounds/
-│   ├── yes.mp3
-│   └── no.mp3
+│   ├── platformio.ini       # PlatformIO configuration
+│   ├── src/
+│   │   ├── main.cpp         # Main program
+│   │   └── bluey_logo.h     # Logo pixel data (RGB565)
+│   └── data/                # SPIFFS files
+│       ├── yes.wav
+│       └── no.wav
+├── sounds/                  # Original/processing audio files
+├── image/                   # Project images
+│   ├── bluey-logo.png
+│   ├── Yes&No Button.jpg
+│   ├── Front.jpg
+│   └── Back.jpg
 ├── docs/
 │   ├── design.md
 │   ├── requirement.md
@@ -106,6 +148,7 @@ M5Stack-StickC-Plus-Bluey-YesNo/
 
 ## 6. Dependencies
 
-- M5StickCPlus library
-- Audio library (ESP32 Audio Tools)
+- M5StickCPlus library (v0.1.1)
+- ESP32-audioI2S library (v2.3.0)
+- ESP8266Audio library (v1.9.0)
 - SPIFFS file system
