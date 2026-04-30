@@ -108,7 +108,15 @@
 - **Melody:** Three ascending tones (880Hz → 1760Hz → 2637Hz)
 - **Duration:** ~600ms total
 
-### 4.3 Power Management
+### 4.3 Shutdown Sound (ON HOLD)
+
+- **Type:** M5StickC Plus built-in beep
+- **Melody:** Three descending tones (2637Hz → 1760Hz → 880Hz)
+- **Duration:** ~600ms total
+- **Trigger:** Long press side button 4 seconds (currently not working, on hold)
+- **Auto-off sound:** Also planned for 5-min auto power-off
+
+### 4.4 Power Management
 
 - **Auto Power-Off:** 5 minutes (300 seconds) of inactivity
 - **Implementation:** `M5.Axp.PowerOff()`

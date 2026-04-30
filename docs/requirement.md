@@ -22,6 +22,8 @@
 | FR-08 | 屏幕顶部显示 Bluey Logo | Should | ✅ |
 | FR-09 | 开机时播放提示音 | Should | ✅ |
 | FR-10 | 5分钟无操作自动关机 | Should | ✅ |
+| FR-11 | 长按侧边按钮4秒关机 | Should | 🔄 ON HOLD |
+| FR-12 | 关机时播放降序提示音 | Should | 🔄 ON HOLD |
 
 ### 2.2 User Interactions
 

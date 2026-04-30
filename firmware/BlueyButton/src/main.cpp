@@ -4,16 +4,31 @@
 #include "bluey_logo.h"
 
 // ============================================
-// 电源管理 - 5分钟无操作自动关机
+// 电源管理 - 5分钟无操作自动关机 + 侧边按钮长按4秒关机
 // ============================================
 #define POWER_OFF_TIME_MS   300000  // 5分钟 = 300000ms
+#define POWER_OFF_LONG_PRESS_MS 4000  // 长按4秒关机
 #define POWER_CHECK_INTERVAL 1000   // 每秒检查一次
 
 unsigned long lastInteractionTime = 0;
+unsigned long powerBtnPressTime = 0;  // 电源按钮按下起始时间
+bool powerBtnWasPressed = false;      // 上次循环电源按钮状态
 
 // 记录用户交互
 void recordInteraction() {
   lastInteractionTime = millis();
+}
+
+// 关机提示音 - 降序三音调
+void playShutdownSound() {
+  M5.Beep.begin();
+  M5.Beep.setVolume(3);
+  M5.Beep.tone(2637);
+  delay(150);
+  M5.Beep.tone(1760);
+  delay(150);
+  M5.Beep.tone(880);
+  delay(200);
 }
 
 // 检查是否需要关机
@@ -34,17 +49,6 @@ void playStartSound() {
   M5.Beep.tone(1760, 150);  // 1760Hz, 150ms
   delay(200);
   M5.Beep.tone(2637, 200);  // 2637Hz, 200ms
-}
-
-// 关机提示音 - 降序三音调
-void playShutdownSound() {
-  M5.Beep.begin();
-  M5.Beep.setVolume(3);
-  M5.Beep.tone(2637, 150);  // 2637Hz, 150ms
-  delay(200);
-  M5.Beep.tone(1760, 150);  // 1760Hz, 150ms
-  delay(200);
-  M5.Beep.tone(880, 200);   // 880Hz, 200ms
 }
 
 // ============================================
@@ -149,6 +153,7 @@ void setup() {
   // 配置按钮引脚 (上拉输入)
   pinMode(RED_BTN_PIN, INPUT_PULLUP);
   pinMode(BLUE_BTN_PIN, INPUT_PULLUP);
+  pinMode(39, INPUT_PULLUP);  // 侧边电源按钮
 
   // 初始化电源管理计时器
   lastInteractionTime = millis();
@@ -167,6 +172,21 @@ void setup() {
 void loop() {
   M5.update();
   audio.loop();
+
+  // 侧边按钮长按4秒关机 (GPIO 39)
+  bool pwrPressed = (digitalRead(39) == LOW);
+  if (pwrPressed && !powerBtnWasPressed) {
+    powerBtnPressTime = millis();
+    powerBtnWasPressed = true;
+  } else if (pwrPressed && powerBtnWasPressed) {
+    if (millis() - powerBtnPressTime >= POWER_OFF_LONG_PRESS_MS) {
+      playShutdownSound();
+      delay(600);
+      M5.Axp.PowerOff();
+    }
+  } else if (!pwrPressed) {
+    powerBtnWasPressed = false;
+  }
 
   // 读取按钮状态 (低电平触发)
   bool redRead  = (digitalRead(RED_BTN_PIN) == LOW);
