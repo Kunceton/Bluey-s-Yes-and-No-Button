@@ -31,6 +31,10 @@ A fun, interactive toy featuring:
 | Hat SPK2 | I2S audio output (BCLK=26, LRC=0, DIN=25) |
 | Unit Dual Button | Grove port (Blue=Yes, Red=No) |
 
+## Hardware Compatibility
+
+The firmware supports both **M5StickC Plus** and **M5StickC Plus SE** — flash directly to either board with no code changes required. The Plus SE removes the IMU (MPU6886), which this project does not use, so all features (audio, buttons, display, power management) work identically on both boards. Verified on StickC Plus SE in October 2026.
+
 ## Final Product
 
 ![Front View](./image/Front.jpg)
